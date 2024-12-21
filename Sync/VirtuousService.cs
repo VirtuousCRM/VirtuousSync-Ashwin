@@ -25,7 +25,7 @@ namespace Sync
             _restClient = new RestClient(options);
         }
 
-        public async Task<List<AbbreviatedContact>> GetContactsByStateAsync(int skip, int take, string state)
+        public async Task<List<AbbreviatedContact>> GetContactsByStateAsync(int skip, int take, string state = "")
         {
             var request = new RestRequest("/api/Contact/Query", Method.Post);
             request.AddQueryParameter("Skip", skip);
@@ -36,8 +36,13 @@ namespace Sync
 
             var allContacts = await _restClient.PostAsync<PagedResult<AbbreviatedContact>>(request);
 
+            if (string.IsNullOrEmpty(state))
+            {
+                return allContacts.List;
+            }
+
             //this is assuming all contacts have US addresses
-            //if not, use api/ContactAddress/ByContact/:contactId and filter by state
+            //if not, use api/ContactAddress/ByContact/:contactId and filter by state or maybe Groups within ContactQueryRequest?
             var contactsByState = ContactsHelper.FilterContactsByState(allContacts.List, state);
             return contactsByState;
         }
