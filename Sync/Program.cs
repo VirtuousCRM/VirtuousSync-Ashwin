@@ -22,6 +22,7 @@ namespace Sync
             var skip = 0;
             var take = 100;
             var maxContacts = 1000;
+            var state = "AZ";
 
             if (take > 0 && maxContacts > 0)
             {
@@ -35,9 +36,9 @@ namespace Sync
 
                     do
                     {
-                        var contacts = await virtuousService.GetContactsAsync(skip, take);
+                        var contacts = await virtuousService.GetContactsByStateAsync(skip, take, state);
                         skip += take;
-                        csv.WriteRecords(contacts.List);
+                        csv.WriteRecords(contacts);
                         hasMore = skip < maxContacts;
                     }
                     while (hasMore);

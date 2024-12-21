@@ -84,6 +84,7 @@
     <Compile Include="AbbreviatedContact.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="ContactQueryRequest.cs" />
+    <Compile Include="ContactsHelper.cs" />
     <Compile Include="PagedResult.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
