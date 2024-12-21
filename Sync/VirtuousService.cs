@@ -1,4 +1,6 @@
 ﻿using RestSharp;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Threading.Tasks;
 
 namespace Sync
@@ -23,7 +25,7 @@ namespace Sync
             _restClient = new RestClient(options);
         }
 
-        public async Task<PagedResult<AbbreviatedContact>> GetContactsAsync(int skip, int take)
+        public async Task<List<AbbreviatedContact>> GetContactsByStateAsync(int skip, int take, string state = "")
         {
             var request = new RestRequest("/api/Contact/Query", Method.Post);
             request.AddQueryParameter("Skip", skip);
@@ -32,8 +34,17 @@ namespace Sync
             var body = new ContactQueryRequest();
             request.AddJsonBody(body);
 
-            var response = await _restClient.GetAsync<PagedResult<AbbreviatedContact>>(request);
-            return response;
+            var allContacts = await _restClient.PostAsync<PagedResult<AbbreviatedContact>>(request);
+
+            if (string.IsNullOrEmpty(state))
+            {
+                return allContacts.List;
+            }
+
+            //this is assuming all contacts have US addresses
+            //if not, use api/ContactAddress/ByContact/:contactId and filter by state or maybe Groups within ContactQueryRequest?
+            var contactsByState = ContactsHelper.FilterContactsByState(allContacts.List, state);
+            return contactsByState;
         }
     }
 }
