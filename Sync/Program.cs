@@ -1,5 +1,7 @@
 ﻿using CsvHelper;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
@@ -28,21 +30,21 @@ namespace Sync
             {
                 //if value of maxContacts is less than value of take, then we only retrieve maxContacts number of contacts
                 take = Math.Min(take, maxContacts);
+                bool hasMore;
+                var contactsFull = new List<AbbreviatedContact>();
 
-                using (var writer = new StreamWriter($"Contacts_{DateTime.Now:MM_dd_yyyy}.csv"))
-                using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                do
                 {
-                    bool hasMore;
-
-                    do
-                    {
-                        var contacts = await virtuousService.GetContactsByStateAsync(skip, take, state);
-                        skip += take;
-                        csv.WriteRecords(contacts);
-                        hasMore = skip < maxContacts;
-                    }
-                    while (hasMore);
+                    var contacts = await virtuousService.GetContactsByStateAsync(skip, take, state);
+                    skip += take;
+                    contactsFull.AddRange(contacts);
+                    hasMore = skip < maxContacts;
                 }
+                while (hasMore);
+
+                //write Contacts to database in a single shot
+                var syncContacts = new SyncContacts();
+                syncContacts.AddContactToDatbase(contactsFull);
             }
             else
             {
